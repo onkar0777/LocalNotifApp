@@ -5,15 +5,15 @@ import { Platform, MenuController, Nav } from 'ionic-angular';
 import { HelloIonicPage, Quote } from '../pages/hello-ionic/hello-ionic';
 import { ListPage } from '../pages/list/list';
 
-import { StatusBar } from '@ionic-native/status-bar';
-import { SplashScreen } from '@ionic-native/splash-screen';
+import { StatusBar } from '@ionic-native/status-bar/ngx';
+import { SplashScreen } from '@ionic-native/splash-screen/ngx';
 import { AngularFireAuth } from '@angular/fire/auth';
 import { auth } from 'firebase/app';
 import { LoginPage } from '../pages/login/login';
 import { AngularFireDatabase } from '@angular/fire/database';
 import { BaseFireService } from '../base/BaseFireService';
 import { Storage } from '@ionic/storage';
-import { LocalNotifications } from '@ionic-native/local-notifications';
+import { LocalNotifications, ELocalNotificationTriggerUnit } from '@ionic-native/local-notifications/ngx';
 import moment from 'moment';
 import { QuoteCardsPage } from '../pages/quote-cards/quote-cards';
 
@@ -55,22 +55,6 @@ export class MyApp {
   }
 
   initializeApp() {
-    // this.afAuth.auth
-    // .signInWithPopup(new auth.GoogleAuthProvider())
-    // .then
-    //   (
-    //   user => {
-    //     if (user) {
-    //       console.log(user)
-    //       this.afDB.list('quotes').valueChanges().subscribe(
-    //         x => console.log(x)
-    //       )
-    //       //this.rootPage = HelloIonicPage;
-    //     } else {
-    //       console.log("error finding user")
-    //     }
-    //   },
-    // )
     this.platform.ready().then(() => {
       // Okay, so the platform is ready and our plugins are available.
       // Here you can do any higher level native things you might need.
@@ -86,79 +70,91 @@ export class MyApp {
       .then(x => {
         console.log(x);
         console.log(x.length);
-          console.log("Here we are supposed to do some shit");
-          this.storage.get(ALL_DATA).then((quoteData) => {
-            console.log('Quotes from local storage', quoteData);
-            const frequency = (quoteData && quoteData.frequency) ? quoteData.frequency : DEFAULT_SETTINGS.frequency;
-            const startTime = (quoteData && quoteData.start) ? moment(quoteData.start, 'hh:mm') : DEFAULT_SETTINGS.startTime;
-            const endTime = (quoteData && quoteData.end) ? moment(quoteData.end, 'hh:mm') : DEFAULT_SETTINGS.endTime;
-            let startTimeTrigger = moment(startTime).add(1, 'days');
-            if(moment().isBefore(startTime)){
-              startTimeTrigger = moment(startTime);
-            }
-            var duration = moment.duration(endTime.diff(moment()));
-            DEFAULT_SETTINGS.noOfNotifs = Math.floor(duration.asHours());
-            console.log("Number of notifs nikal rahe ", moment(), endTime, moment().isAfter(endTime));
-            if (moment().isBefore(startTime) || moment().isAfter(endTime)) {
-              DEFAULT_SETTINGS.noOfNotifs = 0;
-            }
-            console.log("Number of notifs - ", DEFAULT_SETTINGS.noOfNotifs, startTimeTrigger);
-            let fixedDate = moment();
-            let maxNotifDate = null;
+        console.log("Here we are supposed to do some shit");
+        if(x && x.length) {
+          console.log("We should be good, no need to do anything!");
+        } else {
+          let notifications = [];
+          let n:number = 10; // arbitrary large number
 
-            if(x && x.length) {
-              const max = x.reduce((prev, current) => (prev.id > current.id) ? prev : current);
-              console.log(max);
-              if(max && max.trigger && max.trigger.at){
-                maxNotifDate = moment(max.trigger.at);
+          for (let i=0; i<n; i++){
+            let morning = moment().set('hour', 10).set('minute', 0).set('second', 0);
+            let noon =  moment().set('hour', 14).set('minute', 0).set('second', 0);
+            let evening =  moment().set('hour', 18).set('minute', 0).set('second', 0);
+            morning.add('day', i);
+            noon.add('day', i);
+            evening.add('day', i);
+            notifications.push(
+              {
+                id: 1+(3*i),
+                title: 'Health Advise',
+                text: 'Eat your breakfast and do yoga.',
+                trigger: {at: morning.toDate()},
+                led: 'FFF000',
+                sound: this.platform.is('android') ? 'file://assets/sounds/sound.mp3': 'file://assets/sounds/beep.caf',
+                vibrate: true,
+                icon: 'file://assets/imgs/icon.png',
               }
-            }
-
-            console.log("Dates - ", fixedDate, maxNotifDate);
-            if(!maxNotifDate || maxNotifDate.isBefore(moment())){
-            if(quoteData && quoteData.quotes && quoteData.quotes.length) {
-              if(quoteData.quoteNo < quoteData.quotes.length) {
-                for(let i=quoteData.quoteNo; i < (quoteData.quoteNo + DEFAULT_SETTINGS.noOfNotifs); i++) {
-                  if(i<quoteData.quotes.length) {
-                    let triggerTime = moment(fixedDate).add(((i-quoteData.quoteNo)+1)*frequency, 'minutes');                    
-                    this.scheduleLocalNotif(i, quoteData.quotes[i], triggerTime);
-                  }
-                }
-                this.scheduleLocalNotif(DEFAULT_SETTINGS.noOfNotifs, quoteData.quotes[quoteData.quoteNo + DEFAULT_SETTINGS.noOfNotifs], startTimeTrigger);
-                quoteData.quoteNo += DEFAULT_SETTINGS.noOfNotifs + 1;
-                this.storage.set(ALL_DATA, quoteData);
-              } else {
-                for(let i=0; i < DEFAULT_SETTINGS.noOfNotifs; i++) {
-                  if(i<quoteData.quotes.length) {
-                    let triggerTime = moment(fixedDate).add((i+1)*frequency, 'minutes');                    
-                    this.scheduleLocalNotif(i, quoteData.quotes[i], triggerTime);
-                  }
-                }
-                this.scheduleLocalNotif(DEFAULT_SETTINGS.noOfNotifs, quoteData.quotes[DEFAULT_SETTINGS.noOfNotifs], startTimeTrigger);
-                quoteData.quoteNo += DEFAULT_SETTINGS.noOfNotifs + 1;
-                this.storage.set(ALL_DATA, quoteData);
+            );
+            notifications.push(
+              {
+                id: 2+(3*i),
+                title: 'Health Advise',
+                text: 'Eat your lunch and have your medicines.',
+                trigger: {at: noon.toDate()},
+                led: 'FFF000',
+                sound: this.platform.is('android') ? 'file://assets/sounds/sound.mp3': 'file://assets/sounds/beep.caf',
+                vibrate: true,
+                icon: 'file://assets/imgs/icon.png',
               }
-            } else {
-              this.fireService.getRecords().subscribe(x => {
-
-                console.log("Quotes - ", x);
-                this.quotes = x;
-                if(!quoteData) {
-                  this.storage.set(ALL_DATA, {'quotes': this.quotes, quoteNo: DEFAULT_SETTINGS.noOfNotifs+1});
-                } else {
-                  quoteData.quotes = this.quotes;
-                  quoteData.quoteNo = DEFAULT_SETTINGS.noOfNotifs+1;
-                  this.storage.set(ALL_DATA, quoteData);
-                }
-                for(let i=0; i < DEFAULT_SETTINGS.noOfNotifs; i++) {
-                  let triggerTime = moment(fixedDate).add((i+1)*frequency, 'minutes');
-                  this.scheduleLocalNotif(i, this.quotes[i], triggerTime);
-                }
-                this.scheduleLocalNotif(DEFAULT_SETTINGS.noOfNotifs, this.quotes[DEFAULT_SETTINGS.noOfNotifs], startTimeTrigger);
-              });
-            }
+            );
+            notifications.push(
+              {
+                id: 3+(3*i),
+                title: 'Health Advise',
+                text: 'Time for daily meditation.',
+                trigger: {at: evening.toDate()},
+                led: 'FFF000',
+                sound: this.platform.is('android') ? 'file://assets/sounds/sound.mp3': 'file://assets/sounds/beep.caf',
+                vibrate: true,
+                icon: 'file://assets/imgs/icon.png',
+              }
+            );
           }
-          });
+          this.localNotifications.schedule(notifications);
+        }
+          // this.localNotifications.schedule(
+          //   {
+          //     id: 1,
+          //     title: 'Health Advise',
+          //     text: 'Eat your breakfast and do yoga.',
+          //     trigger: { firstAt: new Date(), every: ELocalNotificationTriggerUnit.SECOND, count: 50},
+          //     led: 'FFF000',
+          //     sound: this.platform.is('android') ? 'file://assets/sounds/sound.mp3': 'file://assets/sounds/beep.caf',
+          //     vibrate: true,
+          //     icon: 'file://assets/imgs/icon.png',
+          //   });
+          //   this.localNotifications.schedule({
+          //     id: 2,
+          //     title: 'Health Advise',
+          //     text: 'Eat your lunch and have your medicines.',
+          //     trigger: { every: {minute: 4}, count: 50},
+          //     led: 'FFF000',
+          //     sound: this.platform.is('android') ? 'file://assets/sounds/sound.mp3': 'file://assets/sounds/beep.caf',
+          //     vibrate: true,
+          //     icon: 'file://assets/imgs/icon.png',
+          //   });
+          //   this.localNotifications.schedule({
+          //     id: 3,
+          //     title: 'Health Advise',
+          //     text: 'Time for daily meditation.',
+          //     trigger: { every: {minute: 5}, count: 50},
+          //     led: 'FFF000',
+          //     sound: this.platform.is('android') ? 'file://assets/sounds/sound.mp3': 'file://assets/sounds/beep.caf',
+          //     vibrate: true,
+          //     icon: 'file://assets/imgs/icon.png',
+          //   });
+        
       });
       this.localNotifications.on('click').subscribe(notif => {
         console.log(notif);
@@ -175,30 +171,4 @@ export class MyApp {
     // navigate to the new page if it is not the current page
     this.nav.setRoot(page.component);
   }
-
-  scheduleLocalNotif(i, quote, triggerTime) {
-    
-    // if (triggerTime.isBefore(startTime)) {
-    //   triggerTime = moment(startTime);
-    //   triggerTime.add(frequency, 'minutes');
-    // } else if (triggerTime.isAfter(endTime)) {
-    //   triggerTime = moment(startTime).add(1, 'days');
-    //   triggerTime.add(frequency, 'minutes');
-    // }
-
-    console.log("Notif schedule kar rahe - ",i, quote, triggerTime);
-
-    this.localNotifications.schedule({
-      id: i,
-      title: 'Gurmat Tuk',
-      text: quote.text,
-      trigger: { at:  new Date(triggerTime.format())},
-      led: 'FFF000',
-      sound: this.platform.is('android') ? 'file://assets/sounds/sound.mp3': 'file://assets/sounds/beep.caf',
-      vibrate: true,
-      icon: 'file://assets/imgs/icon.png',
-      data: quote
-    });
-  }
-
 }

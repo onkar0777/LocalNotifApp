@@ -8,10 +8,10 @@ import { HelloIonicPage } from '../pages/hello-ionic/hello-ionic';
 import { ItemDetailsPage } from '../pages/item-details/item-details';
 import { ListPage } from '../pages/list/list';
 
-import { StatusBar } from '@ionic-native/status-bar';
-import { SplashScreen } from '@ionic-native/splash-screen';
+import { StatusBar } from '@ionic-native/status-bar/ngx';
+import { SplashScreen } from '@ionic-native/splash-screen/ngx';
 import {AngularFirestoreModule} from 'angularfire2/firestore';
-import { LocalNotifications } from '@ionic-native/local-notifications'
+import { LocalNotifications } from '@ionic-native/local-notifications/ngx'
 import { AngularFireModule } from '@angular/fire';
 import { AngularFireDatabaseModule, AngularFireDatabase } from '@angular/fire/database';
 import { AngularFireAuthModule } from '@angular/fire/auth';
@@ -21,16 +21,7 @@ import { SettingsProvider } from '../providers/settings/settings';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { QuoteCardsPage } from '../pages/quote-cards/quote-cards';
 import { QuoteCardsPageModule } from '../pages/quote-cards/quote-cards.module';
-import { Network } from '@ionic-native/network';
-
-var config = {
-  apiKey: "AIzaSyCTyxpg77b9mj-PTAvqLnwzjXlmsInLBkk",
-  authDomain: "spritiualquotes.firebaseapp.com",
-  databaseURL: "https://spritiualquotes.firebaseio.com",
-  projectId: "spritiualquotes",
-  storageBucket: "",
-  messagingSenderId: "363011445349"
-};
+import { Network } from '@ionic-native/network/ngx';
 
 export const firebaseConfig = {
   apiKey: "AIzaSyC1lhQgXW-08ttzTrSktVvNTFCA1HVLpw4",

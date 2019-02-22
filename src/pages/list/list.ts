@@ -6,7 +6,7 @@ import { ItemDetailsPage } from '../item-details/item-details';
 import { BaseFireService } from '../../base/BaseFireService';
 import { Quote } from '../hello-ionic/hello-ionic';
 import { Observable } from 'rxjs';
-import { Network } from '@ionic-native/network';
+import { Network } from '@ionic-native/network/ngx';
 import { Storage } from '@ionic/storage';
 const ALL_DATA = 'allData';
 

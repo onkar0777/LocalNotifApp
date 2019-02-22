@@ -5,7 +5,7 @@ import { BaseEntity } from "../../base/base-entity";
 import { BaseFireService } from "../../base/BaseFireService";
 import { FormBuilder, Validators, FormGroup } from "@angular/forms";
 import { SettingsProvider } from "../../providers/settings/settings";
-import { LocalNotifications } from "@ionic-native/local-notifications";
+import { LocalNotifications } from "@ionic-native/local-notifications/ngx";
 
 export interface Quote extends BaseEntity {
   text: string;
